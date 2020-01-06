@@ -1,0 +1,81 @@
+create empty file /boot/ssh to enable ssh on boot/ssh
+add to /boot/config.txt:
+
+dtoverlay=disable-wifi
+dtoverlay=disable-bt
+
+sudo passwd pi
+sudo apt install vim -y
+
+set static IP:
+sudo vi /etc/dhcpcd.conf
+
+interface eth0
+static ip_address=10.0.11.50/24
+#static ip6_address=fd51:42f8:caae:d92e::ff/64
+static routers=10.0.11.1
+static domain_name_servers=10.0.11.1 8.8.8.8 fd51:42f8:caae:d92e::1
+
+
+install Log2Ram [https://github.com/azlux/log2ram]
+
+echo "deb http://packages.azlux.fr/debian/ buster main" | sudo tee /etc/apt/sources.list.d/azlux.list
+wget -qO - https://azlux.fr/repo.gpg.key | sudo apt-key add -
+sudo apt update && sudo apt upgrade -y
+sudo apt install log2ram
+
+
+sudo apt-get install apt-transport-https ca-certificates software-properties-common -y
+curl -fsSL get.docker.com -o get-docker.sh && sh get-docker.sh
+sudo usermod -aG docker pi
+sudo curl https://download.docker.com/linux/raspbian/gpg
+
+vim /etc/apt/sources.list
+
+
+add the line: 
+deb https://download.docker.com/linux/raspbian/ stretch stable
+
+sudo apt-get update && sudo apt-get upgrade -y
+ls /usr/bin/python*
+update-alternatives --install /usr/bin/python python /usr/bin/python2.7 1
+update-alternatives --install /usr/bin/python python /usr/bin/python3.7 2
+
+update-alternatives --config python
+
+sudo apt install python3-pip -y
+sudo update-alternatives --install /usr/bin/pip pip /usr/bin/pip3 1
+
+sudo pip install docker-compose
+
+reboot
+
+systemctl start docker.service
+
+docker info
+
+Utworzenie bridge lan:
+[https://collabnix.com/2-minutes-to-docker-macvlan-networking-a-beginners-guide/]
+docker network create -d macvlan --subnet=10.0.11.50/24 --gateway=10.0.11.1 -o parent=eth0 lan-bridge
+
+docker network ps
+
+docker  run -d --name pihole --net=pub_net --ip=10.0.11.4 -e TZ='Europe/Warsaw' -e WEBPASSWORD="<password_here>" -e DNSMASQ_USER="pihole" -v "$(pwd)/etc-pihole/:/etc/pihole/" -v "$(pwd)/etc-dnsmasq.d/:/etc/dnsmasq.d/" --dns=10.0.11.1 --dns=1.1.1.1 --restart=unless-stopped pihole/pihole:latest
+
+filtry do pihole [https://github.com/MajkiIT/polish-ads-filter/tree/master/polish-pihole-filters]
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/Ad_filter_list_by_Disconnect.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/kad_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/NoTrack_Tracker_Blocklist.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/hostfile.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/easylist_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/easy_privacy_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/adguard_mobile_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/ads-and-tracking-extended.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/ads-and-tracking.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/adservers.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/gambling-hosts.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/youtubehosts.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/adguard_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/adguard_crypto_host.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/Peter_Lowe_ADS.txt
+https://raw.githubusercontent.com/MajkiIT/polish-ads-filter/master/polish-pihole-filters/KADhosts.txt
